@@ -9,6 +9,8 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 // import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Circle;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 
 import java.io.IOException;
 
@@ -32,13 +34,24 @@ public class App extends Application {
 
         // add initial pieces
         for (int i = 0; i < table.length; i++) {
+            final Integer innerI = new Integer(i);
             for (int j = 0; j < table[i].length; j++) {
+                final Integer innerJ = new Integer(j);
                 Button button = new Button();
                 // button.setStyle("-fx-background-color: #5c4300; ");
                 if (j == 0 || (i == j && i < 4)) {
                     Circle circle = new Circle(100.0f, 100.0f, 20.f);
                     circle.setFill(javafx.scene.paint.Color.BLACK);
                     button.setGraphic(circle);
+                    button.setOnAction(new EventHandler<ActionEvent>() {
+                        @Override
+                        public void handle(ActionEvent event) {
+                            System.out.println("black click");
+                            System.out.println("i" + innerI);
+                            System.out.println("j" + innerJ);
+                            gridPane.add(button, innerI, innerJ + 1);
+                        }
+                    });
                 } else if (j == 8 || (i == j && i > 4)) {
                     Circle circle = new Circle(100.0f, 100.0f, 20.f);
                     circle.setFill(javafx.scene.paint.Color.WHITE);
@@ -90,6 +103,12 @@ public class App extends Application {
         stage.setScene(scene);
         stage.show();
     }
+
+    /*
+     * private void move(ActionEvent event) {
+     * System.out.println("click");
+     * }
+     */
 
     static void setRoot(String fxml) throws IOException {
         scene.setRoot(loadFXML(fxml));
