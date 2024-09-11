@@ -46,34 +46,9 @@ public class App extends Application {
                 if (j == 0 || (i == j && i < 4)) {
                     Circle circle = new Circle(100.0f, 100.0f, 20.f);
 
-                    EventHandler<ActionEvent> buttonHandler = new EventHandler<ActionEvent>() {
-                        public void handle(ActionEvent event) {
-                            /*
-                             * System.out.println("black click");
-                             * System.out.println("i" + innerI);
-                             * System.out.println("j" + innerJ);
-                             */
-                            if (button.getGraphic() != null) {
-                                button.setGraphic(null);
-
-                                ObservableList<Node> childrens = gridPane.getChildren();
-                                for (Node node : childrens) {
-                                    if (gridPane.getRowIndex(node) == innerJ + 1
-                                            && gridPane.getColumnIndex(node) == innerI) {
-                                        Button clicked = (Button) node;
-                                        clicked.setGraphic(circle);
-                                    }
-                                }
-                            } else {
-
-                            }
-
-                        }
-                    };
-
                     circle.setFill(javafx.scene.paint.Color.BLACK);
                     button.setGraphic(circle);
-                    button.setOnAction(buttonHandler);
+                    // button.setOnAction(buttonHandler);
                 } else if (j == 8 || (i == j && i > 4)) {
                     Circle circle = new Circle(100.0f, 100.0f, 20.f);
                     circle.setFill(javafx.scene.paint.Color.WHITE);
@@ -119,20 +94,18 @@ public class App extends Application {
                 Circle circle = new Circle(100.0f, 100.0f, 20.f);
                 EventHandler<ActionEvent> buttonHandler = new EventHandler<ActionEvent>() {
                     public void handle(ActionEvent event) {
-                        /*
-                         * System.out.println("black click");
-                         * System.out.println("i" + innerI);
-                         * System.out.println("j" + innerJ);
-                         */
                         if (button.getGraphic() != null) {
-                            button.setGraphic(null);
 
                             ObservableList<Node> childrens = gridPane.getChildren();
                             for (Node node : childrens) {
                                 if (gridPane.getRowIndex(node) == innerJ + 1
                                         && gridPane.getColumnIndex(node) == innerI) {
                                     Button clicked = (Button) node;
-                                    clicked.setGraphic(circle);
+                                    if (clicked.getGraphic() == null) {
+                                        button.setGraphic(null);
+                                        clicked.setGraphic(circle);
+                                    }
+
                                 }
                             }
                         } else {
