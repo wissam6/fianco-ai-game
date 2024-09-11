@@ -58,7 +58,12 @@ public class App extends Application {
                             for (Node node : childrens) {
                                 if (gridPane.getRowIndex(node) == innerJ + 1
                                         && gridPane.getColumnIndex(node) == innerI) {
-                                    // node.setGraphic(null);
+                                    Button clicked = (Button) node;
+                                    System.out.println(clicked);
+                                    clicked.setGraphic(circle);
+                                    // Object[] st = gridPane.getChildren().toArray();
+                                    // Button newbut = st[0];
+
                                 }
                             }
                         }
