@@ -1,7 +1,9 @@
 package com.example;
 
 import javafx.application.Application;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -34,9 +36,9 @@ public class App extends Application {
 
         // add initial pieces
         for (int i = 0; i < table.length; i++) {
-            final Integer innerI = new Integer(i);
+            final Integer innerI = i;
             for (int j = 0; j < table[i].length; j++) {
-                final Integer innerJ = new Integer(j);
+                final Integer innerJ = j;
                 Button button = new Button();
                 // button.setStyle("-fx-background-color: #5c4300; ");
                 if (j == 0 || (i == j && i < 4)) {
@@ -49,7 +51,16 @@ public class App extends Application {
                             System.out.println("black click");
                             System.out.println("i" + innerI);
                             System.out.println("j" + innerJ);
-                            gridPane.add(button, innerI, innerJ + 1);
+                            // gridPane.add(button, innerI, innerJ + 1);
+                            button.setGraphic(null);
+
+                            ObservableList<Node> childrens = gridPane.getChildren();
+                            for (Node node : childrens) {
+                                if (gridPane.getRowIndex(node) == innerJ + 1
+                                        && gridPane.getColumnIndex(node) == innerI) {
+                                    // node.setGraphic(null);
+                                }
+                            }
                         }
                     });
                 } else if (j == 8 || (i == j && i > 4)) {
