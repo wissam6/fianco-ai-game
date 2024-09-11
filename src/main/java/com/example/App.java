@@ -39,35 +39,41 @@ public class App extends Application {
             final Integer innerI = i;
             for (int j = 0; j < table[i].length; j++) {
                 final Integer innerJ = j;
+
                 Button button = new Button();
+
                 // button.setStyle("-fx-background-color: #5c4300; ");
                 if (j == 0 || (i == j && i < 4)) {
                     Circle circle = new Circle(100.0f, 100.0f, 20.f);
+
+                    EventHandler<ActionEvent> buttonHandler = new EventHandler<ActionEvent>() {
+                        public void handle(ActionEvent event) {
+                            /*
+                             * System.out.println("black click");
+                             * System.out.println("i" + innerI);
+                             * System.out.println("j" + innerJ);
+                             */
+                            if (button.getGraphic() != null) {
+                                button.setGraphic(null);
+
+                                ObservableList<Node> childrens = gridPane.getChildren();
+                                for (Node node : childrens) {
+                                    if (gridPane.getRowIndex(node) == innerJ + 1
+                                            && gridPane.getColumnIndex(node) == innerI) {
+                                        Button clicked = (Button) node;
+                                        clicked.setGraphic(circle);
+                                    }
+                                }
+                            } else {
+
+                            }
+
+                        }
+                    };
+
                     circle.setFill(javafx.scene.paint.Color.BLACK);
                     button.setGraphic(circle);
-                    button.setOnAction(new EventHandler<ActionEvent>() {
-                        @Override
-                        public void handle(ActionEvent event) {
-                            System.out.println("black click");
-                            System.out.println("i" + innerI);
-                            System.out.println("j" + innerJ);
-                            // gridPane.add(button, innerI, innerJ + 1);
-                            button.setGraphic(null);
-
-                            ObservableList<Node> childrens = gridPane.getChildren();
-                            for (Node node : childrens) {
-                                if (gridPane.getRowIndex(node) == innerJ + 1
-                                        && gridPane.getColumnIndex(node) == innerI) {
-                                    Button clicked = (Button) node;
-                                    System.out.println(clicked);
-                                    clicked.setGraphic(circle);
-                                    // Object[] st = gridPane.getChildren().toArray();
-                                    // Button newbut = st[0];
-
-                                }
-                            }
-                        }
-                    });
+                    button.setOnAction(buttonHandler);
                 } else if (j == 8 || (i == j && i > 4)) {
                     Circle circle = new Circle(100.0f, 100.0f, 20.f);
                     circle.setFill(javafx.scene.paint.Color.WHITE);
@@ -110,7 +116,32 @@ public class App extends Application {
                 }
 
                 button.setPrefSize(100, 100);
+                Circle circle = new Circle(100.0f, 100.0f, 20.f);
+                EventHandler<ActionEvent> buttonHandler = new EventHandler<ActionEvent>() {
+                    public void handle(ActionEvent event) {
+                        /*
+                         * System.out.println("black click");
+                         * System.out.println("i" + innerI);
+                         * System.out.println("j" + innerJ);
+                         */
+                        if (button.getGraphic() != null) {
+                            button.setGraphic(null);
 
+                            ObservableList<Node> childrens = gridPane.getChildren();
+                            for (Node node : childrens) {
+                                if (gridPane.getRowIndex(node) == innerJ + 1
+                                        && gridPane.getColumnIndex(node) == innerI) {
+                                    Button clicked = (Button) node;
+                                    clicked.setGraphic(circle);
+                                }
+                            }
+                        } else {
+
+                        }
+
+                    }
+                };
+                button.setOnAction(buttonHandler);
                 gridPane.add(button, i, j);
             }
         }
@@ -119,12 +150,6 @@ public class App extends Application {
         stage.setScene(scene);
         stage.show();
     }
-
-    /*
-     * private void move(ActionEvent event) {
-     * System.out.println("click");
-     * }
-     */
 
     static void setRoot(String fxml) throws IOException {
         scene.setRoot(loadFXML(fxml));
