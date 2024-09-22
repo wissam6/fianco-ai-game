@@ -1,136 +1,67 @@
 package com.example;
 
 import javafx.application.Application;
-import javafx.collections.ObservableList;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-// import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Circle;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import javafx.scene.shape.Rectangle;
 
 import java.io.IOException;
 
-/**
- * JavaFX App
- */
 public class App extends Application {
 
     private static Scene scene;
+    private final int boardSize = 9;
+    private final int tileSize = 80;
+    private static GridPane grid;
+    private int[][] board = new int[boardSize][boardSize];
 
     @Override
     public void start(Stage stage) throws IOException {
-        /*
-         * scene = new Scene(loadFXML("primary"), 640, 480);
-         * stage.setScene(scene);
-         * stage.show();
-         */
+        grid = new GridPane();
         stage.setTitle("Fianco");
-        String[][] table = new String[9][9];
-        GridPane gridPane = new GridPane();
 
-        // add initial pieces
-        for (int i = 0; i < table.length; i++) {
-            final Integer innerI = i;
-            for (int j = 0; j < table[i].length; j++) {
-                final Integer innerJ = j;
+        for (int row = 0; row < board.length; row++) {
+            board[0][row] = 1;
+            board[8][row] = 2;
+            for (int col = 0; col < board[row].length; col++) {
 
-                Button button = new Button();
+                Rectangle tile = new Rectangle(tileSize, tileSize);
+                tile.setFill(Color.MAROON);
+                grid.add(tile, col, row);
 
-                // button.setStyle("-fx-background-color: #5c4300; ");
-                if (j == 0 || (i == j && i < 4)) {
-                    Circle circle = new Circle(100.0f, 100.0f, 20.f);
-
-                    circle.setFill(javafx.scene.paint.Color.BLACK);
-                    button.setGraphic(circle);
-                    // button.setOnAction(buttonHandler);
-                } else if (j == 8 || (i == j && i > 4)) {
-                    Circle circle = new Circle(100.0f, 100.0f, 20.f);
-                    circle.setFill(javafx.scene.paint.Color.WHITE);
-                    button.setGraphic(circle);
-                }
-
-                // black
-                if (i == 7 && j == 1) {
-                    Circle circle = new Circle(100.0f, 100.0f, 20.f);
-                    circle.setFill(javafx.scene.paint.Color.BLACK);
-                    button.setGraphic(circle);
-                }
-                if (i == 6 && j == 2) {
-                    Circle circle = new Circle(100.0f, 100.0f, 20.f);
-                    circle.setFill(javafx.scene.paint.Color.BLACK);
-
-                    button.setGraphic(circle);
-                }
-                if (i == 5 && j == 3) {
-                    Circle circle = new Circle(100.0f, 100.0f, 20.f);
-                    circle.setFill(javafx.scene.paint.Color.BLACK);
-                    button.setGraphic(circle);
-                }
-
-                // white
-                if (i == 1 && j == 7) {
-                    Circle circle = new Circle(100.0f, 100.0f, 20.f);
-                    circle.setFill(javafx.scene.paint.Color.WHITE);
-                    button.setGraphic(circle);
-                }
-                if (i == 2 && j == 6) {
-                    Circle circle = new Circle(100.0f, 100.0f, 20.f);
-                    circle.setFill(javafx.scene.paint.Color.WHITE);
-                    button.setGraphic(circle);
-                }
-                if (i == 3 && j == 5) {
-                    Circle circle = new Circle(100.0f, 100.0f, 20.f);
-                    circle.setFill(javafx.scene.paint.Color.WHITE);
-                    button.setGraphic(circle);
-                }
-
-                button.setPrefSize(100, 100);
-                Circle circle = new Circle(100.0f, 100.0f, 20.f);
-                EventHandler<ActionEvent> buttonHandler = new EventHandler<ActionEvent>() {
-                    public void handle(ActionEvent event) {
-                        if (button.getGraphic() != null) {
-
-                            ObservableList<Node> childrens = gridPane.getChildren();
-                            for (Node node : childrens) {
-                                if (gridPane.getRowIndex(node) == innerJ + 1
-                                        && gridPane.getColumnIndex(node) == innerI) {
-                                    Button clicked = (Button) node;
-                                    if (clicked.getGraphic() == null) {
-                                        button.setGraphic(null);
-                                        clicked.setGraphic(circle);
-                                    }
-
-                                }
-                            }
-                        } else {
-
-                        }
-
+                if (row == 0 || (col == row && col < 4)) {
+                    board[row][col] = 1;
+                    if (col < 3) {
+                        board[1 + col][7 - col] = 1;
+                        board[7 - col][1 + col] = 2;
                     }
-                };
-                button.setOnAction(buttonHandler);
-                gridPane.add(button, i, j);
+                } else if (row == 8 || (col == row && col > 4)) {
+                    board[row][col] = 2;
+                }
             }
         }
 
-        Scene scene = new Scene(gridPane, 500, 500);
+        render();
+        scene = new Scene(grid, tileSize * boardSize, tileSize * boardSize);
         stage.setScene(scene);
         stage.show();
     }
 
-    static void setRoot(String fxml) throws IOException {
-        scene.setRoot(loadFXML(fxml));
-    }
-
-    private static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(fxml + ".fxml"));
-        return fxmlLoader.load();
+    public void render() {
+        for (int row = 0; row < boardSize; row++) {
+            for (int col = 0; col < boardSize; col++) {
+                if (board[row][col] == 1) {
+                    Circle piece = new Circle(tileSize / 2 - 10, Color.BLACK);
+                    grid.add(piece, col, row);
+                } else if (board[row][col] == 2) {
+                    Circle piece = new Circle(tileSize / 2 - 10, Color.WHITE);
+                    grid.add(piece, col, row);
+                }
+            }
+        }
     }
 
     public static void main(String[] args) {
