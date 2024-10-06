@@ -6,11 +6,7 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import java.util.List;
-
-import com.example.Board.BestMove;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Board {
     private final int boardSize;
@@ -245,12 +241,12 @@ public class Board {
     // ai
     public int evaluateBoard(int[][] board) {
         int score = 0;
-        for (int row = 0; row < boardSize; row++) {
-            for (int col = 0; col < boardSize; col++) {
+        for (int row = 0; row < board.length; row++) {
+            for (int col = 0; col < board[row].length; col++) {
                 if (board[row][col] == 1) {
-                    score += 1;
+                    score += (8 - row); // Reward Player 1 for being closer to the goal (top of the board)
                 } else if (board[row][col] == 2) {
-                    score -= 1;
+                    score -= row; // Reward Player 2 for being closer to the goal (bottom of the board)
                 }
             }
         }
@@ -323,13 +319,27 @@ public class Board {
     }
 
     public void makeMove(int[][] board, Move move) {
+
         board[move.toRow][move.toCol] = board[move.fromRow][move.fromCol];
         board[move.fromRow][move.fromCol] = -1;
+        if (move.fromCol - move.toCol == 2) {
+            board[move.fromRow + 1][move.fromCol - 1] = -1;
+        }
+        if (move.fromCol - move.toCol == -2) {
+            board[move.fromRow + 1][move.fromCol + 1] = -1;
+        }
+
     }
 
     public void undoMove(int[][] board, Move move) {
         board[move.fromRow][move.fromCol] = board[move.toRow][move.toCol];
         board[move.toRow][move.toCol] = -1;
+        if (move.fromCol - move.toCol == 2) {
+            board[move.fromRow + 1][move.fromCol - 1] = 1;
+        }
+        if (move.fromCol - move.toCol == -2) {
+            board[move.fromRow + 1][move.fromCol + 1] = 1;
+        }
     }
 
     public static class Move {
@@ -370,7 +380,6 @@ public class Board {
             validMoves.add(new Move(row, col, row + 2, col + 2));
 
         }
-
         return validMoves;
     }
 
