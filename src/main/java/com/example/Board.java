@@ -96,6 +96,7 @@ public class Board {
     }
 
     public void handleTileClick(int row, int col) {
+        // System.out.println(row);
         Paint fillColor = tiles[row][col].getFill();
         String colorAsString = ((Color) fillColor).toString();
 
@@ -241,15 +242,45 @@ public class Board {
     // ai
     public int evaluateBoard(int[][] board) {
         int score = 0;
+
         for (int row = 0; row < board.length; row++) {
             for (int col = 0; col < board[row].length; col++) {
                 if (board[row][col] == 1) {
-                    score += (8 - row); // Reward Player 1 for being closer to the goal (top of the board)
+                    // Reward Player 1 for being closer to the goal (top of the board)
+                    score += (8 - row);
+
+                    // Extra reward for Player 1 being 1 step from winning
+                    if (row == 1) {
+                        score += 50; // Large bonus for being one step away from the goal
+                    }
+
+                    // Huge reward for Player 1 winning (reaching row 0)
+                    if (row == 0) {
+                        score += 1000; // Winning move for Player 1
+
+                    }
+
                 } else if (board[row][col] == 2) {
-                    score -= row; // Reward Player 2 for being closer to the goal (bottom of the board)
+                    // Reward Player 2 for being closer to the goal (bottom of the board)
+                    score -= (row * 10);
+
+                    // Extra reward for Player 2 being 1 step from winning
+                    if (row == 7) {
+                        score -= 50; // Large bonus for being one step away from the goal
+                    }
+
+                    if (row == 6) {
+                        score -= 50; // Encourage Player 2 to move forward
+                    }
+
+                    // Huge reward for Player 2 winning (reaching row 8)
+                    if (row == 8) {
+                        score -= 1000; // Winning move for Player 2
+                    }
                 }
             }
         }
+
         return score;
     }
 
@@ -369,7 +400,7 @@ public class Board {
 
         }
         // take piece to the left
-        if (col > 0 && row < 7 && board[row + 1][col - 1] == 1 && board[row + 2][col
+        if (col > 1 && row < 7 && board[row + 1][col - 1] == 1 && board[row + 2][col
                 - 2] == -1) {
             validMoves.add(new Move(row, col, row + 2, col - 2));
 
