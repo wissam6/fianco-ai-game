@@ -4,7 +4,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -16,9 +15,8 @@ public class Board {
     private static int clickedRow;
     private static int clickedCol;
     private int[][] board;
-    private Circle[][] pieces;
-    private Rectangle[][] tiles;
-    // AI ai = new AI();
+    private Piece[][] pieces;
+    private Tile[][] tiles;
 
     public Board() {
         this.boardSize = 9;
@@ -28,8 +26,8 @@ public class Board {
         this.clickedCol = 0;
         this.board = new int[boardSize][boardSize];
         this.grid = new GridPane();
-        this.pieces = new Circle[boardSize][boardSize];
-        this.tiles = new Rectangle[boardSize][boardSize];
+        this.pieces = new Piece[boardSize][boardSize];
+        this.tiles = new Tile[boardSize][boardSize];
         initializeBoard();
         render();
     }
@@ -40,16 +38,15 @@ public class Board {
             board[8][row] = 1;
             for (int col = 0; col < board[row].length; col++) {
 
-                Rectangle tile = new Rectangle(tileSize, tileSize);
-                tile.setFill(Color.MAROON);
+                Tile tile = new Tile(tileSize, Color.MAROON, Color.BLACK, 2);
 
                 int finalRow = row;
                 int finalCol = col;
 
-                tile.setOnMouseClicked(event -> handleTileClick(finalRow, finalCol));
+                tile.getTile().setOnMouseClicked(event -> handleTileClick(finalRow, finalCol));
                 tiles[row][col] = tile;
 
-                grid.add(tile, col, row);
+                grid.add(tile.getTile(), col, row);
 
                 if (row == 0 || (col == row && col < 4)) {
                     board[row][col] = 2;
@@ -79,14 +76,14 @@ public class Board {
                 final int FinalCol = col;
 
                 if (board[row][col] == 1) {
-                    Circle piece = new Circle(tileSize / 2 - 10, Color.WHITE);
-                    grid.add(piece, col, row);
-                    piece.setOnMouseClicked(event -> handleTileClick(finalRow, FinalCol));
+                    Piece piece = new Piece(tileSize / 2 - 10, Color.WHITE);
+                    grid.add(piece.getPiece(), col, row);
+                    piece.getPiece().setOnMouseClicked(event -> handleTileClick(finalRow, FinalCol));
                     pieces[row][col] = piece;
                 } else if (board[row][col] == 2) {
-                    Circle piece = new Circle(tileSize / 2 - 10, Color.BLACK);
-                    grid.add(piece, col, row);
-                    piece.setOnMouseClicked(event -> handleTileClick(finalRow, FinalCol));
+                    Piece piece = new Piece(tileSize / 2 - 10, Color.BLACK);
+                    grid.add(piece.getPiece(), col, row);
+                    piece.getPiece().setOnMouseClicked(event -> handleTileClick(finalRow, FinalCol));
                     pieces[row][col] = piece;
                 } else {
                     pieces[row][col] = null;
@@ -127,7 +124,7 @@ public class Board {
                 }
 
             } else {
-                Circle clickedPiece = pieces[row][col];
+                Piece clickedPiece = pieces[row][col];
                 if (clickedPiece != null) {
                     Paint fill = clickedPiece.getFill();
                     Color color = (Color) fill;
@@ -217,7 +214,7 @@ public class Board {
 
     private void changeTileColor(int row, int col, Color color) {
         if (row >= 0 && row < boardSize && col >= 0 && col < boardSize) {
-            Rectangle tile = tiles[row][col];
+            Tile tile = tiles[row][col];
             tile.setFill(color);
         }
     }
@@ -225,7 +222,7 @@ public class Board {
     private void removeHighLight() {
         for (int row = 0; row < board.length; row++) {
             for (int col = 0; col < board[row].length; col++) {
-                Rectangle tile = tiles[row][col];
+                Tile tile = tiles[row][col];
                 tile.setFill(Color.MAROON);
             }
         }
