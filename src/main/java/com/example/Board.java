@@ -134,7 +134,7 @@ public class Board {
         // call ai after player 1 move
         BestMove bestMove = negaMax(board, 4, Integer.MIN_VALUE, Integer.MAX_VALUE, -1, nextPlayer);
         if (bestMove.move != null) {
-            makeMove(board, bestMove.move);
+            makeMove(board, bestMove.move, nextPlayer);
             turn = currentPlayer;
             render(); // Update the visual board
 
@@ -350,13 +350,13 @@ public class Board {
         for (Move move : possibleMoves) {
 
             // Make the move on the board
-            makeMove(board, move);
+            makeMove(board, move, player);
 
             // Recursively evaluate the resulting position
             BestMove eval = negaMax(board, depth - 1, -beta, -alpha, -color, player);
 
             // Undo the move to restore the original board state
-            undoMove(board, move);
+            undoMove(board, move, player);
 
             // Negate the evaluation because we are alternating between maximizing and
             // minimizing
@@ -382,11 +382,11 @@ public class Board {
 
         List<Move> moves = new ArrayList<>();
 
-        int player = (color == 1) ? 1 : 2; // Map color to board values
-
+        // int player = (color == 1) ? 1 : 2; // Map color to board values
         for (int row = 0; row < board.length; row++) {
             for (int col = 0; col < board[row].length; col++) {
-                if (board[row][col] == player) {
+                // issue here
+                if (board[row][col] == currentPlayer) {
                     moves.addAll(getValidMoves(board, row, col, currentPlayer));
                 }
             }
@@ -394,29 +394,50 @@ public class Board {
         return moves;
     }
 
-    public void makeMove(int[][] board, Move move) {
-        // issue here
-        board[move.toRow][move.toCol] = board[move.fromRow][move.fromCol];
-        board[move.fromRow][move.fromCol] = -1;
-        if (move.fromCol - move.toCol == 2) {
-            board[move.fromRow + 1][move.fromCol - 1] = -1;
-        }
-        if (move.fromCol - move.toCol == -2) {
-            board[move.fromRow + 1][move.fromCol + 1] = -1;
+    public void makeMove(int[][] board, Move move, int player) {
+        if (player == 2) {
+            board[move.toRow][move.toCol] = board[move.fromRow][move.fromCol];
+            board[move.fromRow][move.fromCol] = -1;
+            if (move.fromCol - move.toCol == 2) {
+                board[move.fromRow + 1][move.fromCol - 1] = -1;
+            }
+            if (move.fromCol - move.toCol == -2) {
+                board[move.fromRow + 1][move.fromCol + 1] = -1;
+            }
+        } else {
+            board[move.toRow][move.toCol] = board[move.fromRow][move.fromCol];
+            board[move.fromRow][move.fromCol] = -1;
+            if (move.fromCol - move.toCol == 2) {
+                board[move.fromRow - 1][move.fromCol - 1] = -1;
+            }
+            if (move.fromCol - move.toCol == -2) {
+                board[move.fromRow - 1][move.fromCol + 1] = -1;
+            }
         }
 
     }
 
-    public void undoMove(int[][] board, Move move) {
-        // issue here
-        board[move.fromRow][move.fromCol] = board[move.toRow][move.toCol];
-        board[move.toRow][move.toCol] = -1;
-        if (move.fromCol - move.toCol == 2) {
-            board[move.fromRow + 1][move.fromCol - 1] = 1;
+    public void undoMove(int[][] board, Move move, int player) {
+        if (player == 2) {
+            board[move.fromRow][move.fromCol] = board[move.toRow][move.toCol];
+            board[move.toRow][move.toCol] = -1;
+            if (move.fromCol - move.toCol == 2) {
+                board[move.fromRow + 1][move.fromCol - 1] = 1;
+            }
+            if (move.fromCol - move.toCol == -2) {
+                board[move.fromRow + 1][move.fromCol + 1] = 1;
+            }
+        } else {
+            board[move.fromRow][move.fromCol] = board[move.toRow][move.toCol];
+            board[move.toRow][move.toCol] = -1;
+            if (move.fromCol - move.toCol == 2) {
+                board[move.fromRow - 1][move.fromCol - 1] = 2;
+            }
+            if (move.fromCol - move.toCol == -2) {
+                board[move.fromRow - 1][move.fromCol + 1] = 2;
+            }
         }
-        if (move.fromCol - move.toCol == -2) {
-            board[move.fromRow + 1][move.fromCol + 1] = 1;
-        }
+
     }
 
     public static class Move {
