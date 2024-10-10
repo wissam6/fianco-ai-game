@@ -3,6 +3,7 @@ package com.example;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.input.MouseEvent;
 
 public class Tile {
     private Rectangle tile;
@@ -24,5 +25,9 @@ public class Tile {
 
     public void setFill(Paint color) {
         tile.setFill(color);
+    }
+
+    public void fireEvent(MouseEvent event) {
+        tile.fireEvent(event);
     }
 }
