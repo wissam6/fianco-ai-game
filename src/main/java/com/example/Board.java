@@ -17,6 +17,7 @@ public class Board {
     private int[][] board;
     private Piece[][] pieces;
     private Tile[][] tiles;
+    AI ai = new AI();
 
     public Board() {
         this.boardSize = 9;
@@ -131,26 +132,11 @@ public class Board {
                     if (color.equals(Color.WHITE)) {
                         clickedRow = row;
                         clickedCol = col;
+                        List<Move> playerOneMoves = getValidMoves(board, row, col, 1);
+                        for (Move move : playerOneMoves) {
+                            changeTileColor(move.toRow, move.toCol, Color.LIGHTYELLOW);
+                        }
 
-                        if (board[row - 1][col] == -1) {
-                            changeTileColor(row - 1, col, Color.LIGHTYELLOW);
-                        }
-                        // move to the left
-                        if (col > 0 && board[row][col - 1] == -1) {
-                            changeTileColor(row, col - 1, Color.LIGHTYELLOW);
-                        }
-                        // move to the right
-                        if (col < 8 && board[row][col + 1] == -1) {
-                            changeTileColor(row, col + 1, Color.LIGHTYELLOW);
-                        }
-                        // take piece to the left
-                        if (col > 0 && row > 1 && board[row - 1][col - 1] == 2 && board[row - 2][col - 2] == -1) {
-                            changeTileColor(row - 2, col - 2, Color.LIGHTYELLOW);
-                        }
-                        // take piece to the right
-                        if (col < 7 && row > 1 && board[row - 1][col + 1] == 2 && board[row - 2][col + 2] == -1) {
-                            changeTileColor(row - 2, col + 2, Color.LIGHTYELLOW);
-                        }
                     }
                 }
             }
@@ -300,7 +286,7 @@ public class Board {
         int maxEval = Integer.MIN_VALUE;
         Move bestMove = null;
 
-        List<Move> possibleMoves = generateMoves(board, color);
+        List<Move> possibleMoves = generateMoves(board, color, 2);
         for (Move move : possibleMoves) {
 
             // Make the move on the board
@@ -332,14 +318,16 @@ public class Board {
         return new BestMove(maxEval, bestMove); // Return the best evaluation and move
     }
 
-    public List<Move> generateMoves(int[][] board, int color) {
+    public List<Move> generateMoves(int[][] board, int color, int currentPlayer) {
+
         List<Move> moves = new ArrayList<>();
 
         int player = (color == 1) ? 1 : 2; // Map color to board values
+
         for (int row = 0; row < board.length; row++) {
             for (int col = 0; col < board[row].length; col++) {
                 if (board[row][col] == player) {
-                    moves.addAll(getValidMoves(board, row, col));
+                    moves.addAll(getValidMoves(board, row, col, currentPlayer));
                 }
             }
         }
@@ -381,33 +369,56 @@ public class Board {
         }
     }
 
-    public List<Move> getValidMoves(int[][] board, int row, int col) {
+    public List<Move> getValidMoves(int[][] board, int row, int col, int player) {
         List<Move> validMoves = new ArrayList<>();
-        // move forward
-        if (row < 8 && board[row + 1][col] == -1) {
-            validMoves.add(new Move(row, col, row + 1, col));
-        }
-        // move to the left
-        if (col > 0 && board[row][col - 1] == -1) {
-            validMoves.add(new Move(row, col, row, col - 1));
-        }
-        // move to the right
-        if (col < 8 && board[row][col + 1] == -1) {
-            validMoves.add(new Move(row, col, row, col + 1));
+        if (player == 1) {
+            if (board[row - 1][col] == -1) {
+                validMoves.add(new Move(row, col, row - 1, col));
+            }
+            // move to the left
+            if (col > 0 && board[row][col - 1] == -1) {
+                validMoves.add(new Move(row, col, row, col - 1));
+            }
+            // move to the right
+            if (col < 8 && board[row][col + 1] == -1) {
+                validMoves.add(new Move(row, col, row, col + 1));
+            }
+            // take piece to the left
+            if (col > 0 && row > 1 && board[row - 1][col - 1] == 2 && board[row - 2][col - 2] == -1) {
+                validMoves.add(new Move(row, col, row - 2, col - 2));
+            }
+            // take piece to the right
+            if (col < 7 && row > 1 && board[row - 1][col + 1] == 2 && board[row - 2][col + 2] == -1) {
+                validMoves.add(new Move(row, col, row - 2, col + 2));
+            }
+        } else {
+            // move forward
+            if (row < 8 && board[row + 1][col] == -1) {
+                validMoves.add(new Move(row, col, row + 1, col));
+            }
+            // move to the left
+            if (col > 0 && board[row][col - 1] == -1) {
+                validMoves.add(new Move(row, col, row, col - 1));
+            }
+            // move to the right
+            if (col < 8 && board[row][col + 1] == -1) {
+                validMoves.add(new Move(row, col, row, col + 1));
 
-        }
-        // take piece to the left
-        if (col > 1 && row < 7 && board[row + 1][col - 1] == 1 && board[row + 2][col
-                - 2] == -1) {
-            validMoves.add(new Move(row, col, row + 2, col - 2));
+            }
+            // take piece to the left
+            if (col > 1 && row < 7 && board[row + 1][col - 1] == 1 && board[row + 2][col
+                    - 2] == -1) {
+                validMoves.add(new Move(row, col, row + 2, col - 2));
 
-        }
-        // take piece to the right
-        if (col < 7 && row < 7 && board[row + 1][col + 1] == 1 && board[row + 2][col
-                + 2] == -1) {
-            validMoves.add(new Move(row, col, row + 2, col + 2));
+            }
+            // take piece to the right
+            if (col < 7 && row < 7 && board[row + 1][col + 1] == 1 && board[row + 2][col
+                    + 2] == -1) {
+                validMoves.add(new Move(row, col, row + 2, col + 2));
 
+            }
         }
+
         return validMoves;
     }
 
