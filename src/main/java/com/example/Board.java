@@ -3,7 +3,6 @@ package com.example;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
@@ -95,6 +94,19 @@ public class Board {
         }
     }
 
+    public void resetHighLight() {
+        for (int row = 0; row < boardSize; row++) {
+            for (int col = 0; col < boardSize; col++) {
+                Paint fillColor = tiles[row][col].getFill();
+                String colorAsString = ((Color) fillColor).toString();
+                if (colorAsString.equals(Color.LIGHTYELLOW.toString())) {
+                    changeTileColor(row, col, Color.MAROON);
+                }
+            }
+        }
+
+    }
+
     public void clickTile(int row, int col) {
         if (row >= 0 && row < tiles.length && col >= 0 && col < tiles[0].length) {
             Tile tile = tiles[row][col]; // Get the tile at that position
@@ -113,6 +125,7 @@ public class Board {
         // System.out.println(row);
         Paint fillColor = tiles[row][col].getFill();
         String colorAsString = ((Color) fillColor).toString();
+        resetHighLight();
 
         if (turn == 1) {
             // if the clicked tile is the highlighted one
@@ -140,6 +153,7 @@ public class Board {
                     makeMove(board, bestMove.move);
                     turn = 1;
                     render(); // Update the visual board
+
                     for (int rows = 0; rows < boardSize; rows++) {
                         for (int cols = 0; cols < boardSize; cols++) {
                             if (board[rows][cols] == 1) {
@@ -150,10 +164,13 @@ public class Board {
                                         changeTileColor(move.fromRow, move.fromCol, Color.GREEN);
                                         clickTile(move.fromRow, move.fromCol);
                                     }
+
                                 }
+
                             }
                         }
                     }
+
                 }
 
             } else {
