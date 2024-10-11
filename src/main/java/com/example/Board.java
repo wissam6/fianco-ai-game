@@ -109,7 +109,7 @@ public class Board {
             for (int col = 0; col < boardSize; col++) {
                 Paint fillColor = tiles[row][col].getFill();
                 String colorAsString = ((Color) fillColor).toString();
-                if (!(colorAsString.equals(Color.MAROON.toString()))) {
+                if (colorAsString.equals(Color.LIGHTYELLOW.toString())) {
                     changeTileColor(row, col, Color.MAROON);
                 }
             }
@@ -117,28 +117,35 @@ public class Board {
 
     }
 
-    public void clickTile(int row, int col) {
-        if (row >= 0 && row < tiles.length && col >= 0 && col < tiles[0].length) {
-            Tile tile = tiles[row][col]; // Get the tile at that position
-
-            // Create a new MouseEvent to simulate the click
-            MouseEvent clickEvent = new MouseEvent(MouseEvent.MOUSE_CLICKED,
-                    0, 0, 0, 0, MouseButton.PRIMARY, 1,
-                    false, false, false, false, true, false, false, false, false, false, null);
-
-            // Fire the event on the tile
-            tile.fireEvent(clickEvent);
+    public void resetValidMove() {
+        for (int row = 0; row < boardSize; row++) {
+            for (int col = 0; col < boardSize; col++) {
+                Paint fillColor = tiles[row][col].getFill();
+                String colorAsString = ((Color) fillColor).toString();
+                if (colorAsString.equals(Color.PURPLE.toString())) {
+                    changeTileColor(row, col, Color.MAROON);
+                }
+            }
         }
+
     }
 
     public void aiMove(int currentPlayer, int nextPlayer) {
         // call ai after player 1 move
         // issue -1 should depend on color
-        BestMove bestMove = negaMax(board, 4, Integer.MIN_VALUE, Integer.MAX_VALUE, -1, nextPlayer);
+        BestMove bestMove = negaMax(board, 6, Integer.MIN_VALUE, Integer.MAX_VALUE, -1, nextPlayer);
         if (bestMove.move != null) {
             makeMove(board, bestMove.move, nextPlayer);
             turn = currentPlayer;
             render(); // Update the visual board
+            // if (playerOne == "ai" && playerTwo == "ai" && turn == 2) {
+            // aiMove(1, 2);
+            // render();
+            // }
+            // if (playerOne == "ai" && playerTwo == "ai" && turn == 1) {
+            // aiMove(2, 1);
+            // render();
+            // }
 
             for (int rows = 0; rows < boardSize; rows++) {
                 for (int cols = 0; cols < boardSize; cols++) {
@@ -147,12 +154,12 @@ public class Board {
                         // if more than one just highlight
                         for (Move move : playerMoves) {
                             if (move.fromRow - move.toRow == 2) {
-                                changeTileColor(move.fromRow, move.fromCol, Color.GREEN);
-                                clickTile(move.fromRow, move.fromCol);
+                                changeTileColor(move.fromRow, move.fromCol, Color.PURPLE);
+
                             }
                             if (move.fromRow - move.toRow == -2) {
                                 changeTileColor(move.fromRow, move.fromCol, Color.PURPLE);
-                                clickTile(move.fromRow, move.fromCol);
+
                             }
 
                         }
@@ -165,14 +172,28 @@ public class Board {
     }
 
     public void handleTileClick(int row, int col) {
-        // System.out.println(row);
         Paint fillColor = tiles[row][col].getFill();
         String colorAsString = ((Color) fillColor).toString();
+        boolean overTake = false;
         resetHighLight();
+        // removeHighLight();
+
+        for (int rows = 0; rows < boardSize; rows++) {
+            for (int cols = 0; cols < boardSize; cols++) {
+                Paint fillColor1 = tiles[rows][cols].getFill();
+                String colorAsString1 = ((Color) fillColor1).toString();
+                if (colorAsString1.equals(Color.PURPLE.toString())) {
+                    overTake = true;
+                }
+            }
+        }
 
         if (turn == 1) {
             // if the clicked tile is the highlighted one
+            // removeHighLight();
             if (colorAsString.equals(Color.LIGHTYELLOW.toString())) {
+                removeHighLight();
+                // resetHighLight();
 
                 board[clickedRow][clickedCol] = -1;
                 board[row][col] = 1;
@@ -183,7 +204,7 @@ public class Board {
                     board[clickedRow - 1][clickedCol + 1] = -1;
                 }
                 turn = 2;
-                removeHighLight();
+                // removeHighLight();
                 render();
                 if (row == 0) {
                     System.out.println("Player 1 wins");
@@ -206,8 +227,29 @@ public class Board {
                         clickedRow = row;
                         clickedCol = col;
                         List<Move> playerOneMoves = getValidMoves(board, row, col, 1);
-                        for (Move move : playerOneMoves) {
-                            changeTileColor(move.toRow, move.toCol, Color.LIGHTYELLOW);
+                        if (overTake) {
+                            Paint fillColor2 = tiles[row][col].getFill();
+                            String colorAsString2 = ((Color) fillColor2).toString();
+
+                            if (colorAsString2.equals(Color.PURPLE.toString())) {
+                                boolean eatLeft = col > 1 && row > 1 && board[row - 1][col - 1] == 2
+                                        && board[row - 2][col - 2] == -1;
+                                boolean eatRight = col < 7 && row > 1 && board[row - 1][col + 1] == 2
+                                        && board[row - 2][col + 2] == -1;
+
+                                if (eatLeft) {
+                                    changeTileColor(row - 2, col - 2, Color.LIGHTYELLOW);
+                                }
+
+                                if (eatRight) {
+                                    changeTileColor(row - 2, col + 2, Color.LIGHTYELLOW);
+                                }
+                            }
+
+                        } else {
+                            for (Move move : playerOneMoves) {
+                                changeTileColor(move.toRow, move.toCol, Color.LIGHTYELLOW);
+                            }
                         }
 
                     }
@@ -216,7 +258,7 @@ public class Board {
         } else {
             // if the clicked tile is the highlighted one
             if (colorAsString.equals(Color.LIGHTYELLOW.toString())) {
-
+                removeHighLight();
                 board[clickedRow][clickedCol] = -1;
                 board[row][col] = 2;
                 if (col - clickedCol == -2) {
@@ -250,8 +292,31 @@ public class Board {
                         clickedRow = row;
                         clickedCol = col;
                         List<Move> playerOneMoves = getValidMoves(board, row, col, 2);
-                        for (Move move : playerOneMoves) {
-                            changeTileColor(move.toRow, move.toCol, Color.LIGHTYELLOW);
+                        if (overTake) {
+                            Paint fillColor2 = tiles[row][col].getFill();
+                            String colorAsString2 = ((Color) fillColor2).toString();
+
+                            if (colorAsString2.equals(Color.PURPLE.toString())) {
+                                boolean eatLeft = col > 1 && row < 7 && board[row + 1][col - 1] == 1
+                                        && board[row + 2][col
+                                                - 2] == -1;
+                                boolean eatRight = col < 7 && row < 7 && board[row + 1][col + 1] == 1
+                                        && board[row + 2][col
+                                                + 2] == -1;
+
+                                if (eatLeft) {
+                                    changeTileColor(row + 2, col - 2, Color.LIGHTYELLOW);
+                                }
+
+                                if (eatRight) {
+                                    changeTileColor(row + 2, col + 2, Color.LIGHTYELLOW);
+                                }
+                            }
+
+                        } else {
+                            for (Move move : playerOneMoves) {
+                                changeTileColor(move.toRow, move.toCol, Color.LIGHTYELLOW);
+                            }
                         }
 
                     }
