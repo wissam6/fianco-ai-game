@@ -22,7 +22,7 @@ public class Board {
     private String playerOne;
     private String playerTwo;
 
-    public Board() {
+    public Board(String playerOneType, String playerTwoType) {
         this.boardSize = 9;
         this.tileSize = 80;
         this.turn = 1;
@@ -32,8 +32,8 @@ public class Board {
         this.grid = new GridPane();
         this.pieces = new Piece[boardSize][boardSize];
         this.tiles = new Tile[boardSize][boardSize];
-        this.playerOne = "ai";
-        this.playerTwo = "person";
+        this.playerOne = playerOneType;
+        this.playerTwo = playerTwoType;
         initializeBoard();
         render();
     }
