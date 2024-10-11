@@ -134,7 +134,7 @@ public class Board {
         // call ai after player 1 move
         // issue -1 should depend on color
         int color = nextPlayer == 1 ? 1 : -1;
-        BestMove bestMove = negaMax(board, 6, Integer.MIN_VALUE, Integer.MAX_VALUE, color, nextPlayer);
+        BestMove bestMove = negaMax(board, 4, Integer.MIN_VALUE, Integer.MAX_VALUE, color, nextPlayer);
         if (bestMove.move != null) {
             makeMove(board, bestMove.move, nextPlayer);
             turn = currentPlayer;
@@ -417,6 +417,12 @@ public class Board {
 
         List<Move> possibleMoves = generateMoves(board, color, player);
         for (Move move : possibleMoves) {
+
+            // if can take
+            if (move.fromRow - move.toRow == 2 || move.fromRow - move.toRow == -2) {
+                BestMove eval = negaMax(board, depth - 1, -beta, -alpha, -color, player);
+                return new BestMove(-eval.score, move);
+            }
 
             // Make the move on the board
             makeMove(board, move, player);
