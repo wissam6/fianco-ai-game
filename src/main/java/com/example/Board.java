@@ -133,7 +133,8 @@ public class Board {
     public void aiMove(int currentPlayer, int nextPlayer) {
         // call ai after player 1 move
         // issue -1 should depend on color
-        BestMove bestMove = negaMax(board, 6, Integer.MIN_VALUE, Integer.MAX_VALUE, -1, nextPlayer);
+        int color = nextPlayer == 1 ? 1 : -1;
+        BestMove bestMove = negaMax(board, 6, Integer.MIN_VALUE, Integer.MAX_VALUE, color, nextPlayer);
         if (bestMove.move != null) {
             makeMove(board, bestMove.move, nextPlayer);
             turn = currentPlayer;
