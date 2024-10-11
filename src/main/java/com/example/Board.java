@@ -1,7 +1,5 @@
 package com.example;
 
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -131,28 +129,19 @@ public class Board {
     }
 
     public void aiMove(int currentPlayer, int nextPlayer) {
-        // call ai after player 1 move
-        // issue -1 should depend on color
+
         int color = nextPlayer == 1 ? 1 : -1;
         BestMove bestMove = negaMax(board, 4, Integer.MIN_VALUE, Integer.MAX_VALUE, color, nextPlayer);
         if (bestMove.move != null) {
             makeMove(board, bestMove.move, nextPlayer);
             turn = currentPlayer;
-            render(); // Update the visual board
-            // if (playerOne == "ai" && playerTwo == "ai" && turn == 2) {
-            // aiMove(1, 2);
-            // render();
-            // }
-            // if (playerOne == "ai" && playerTwo == "ai" && turn == 1) {
-            // aiMove(2, 1);
-            // render();
-            // }
+            render();
 
             for (int rows = 0; rows < boardSize; rows++) {
                 for (int cols = 0; cols < boardSize; cols++) {
                     if (board[rows][cols] == currentPlayer) {
                         List<Move> playerMoves = getValidMoves(board, rows, cols, currentPlayer);
-                        // if more than one just highlight
+
                         for (Move move : playerMoves) {
                             if (move.fromRow - move.toRow == 2) {
                                 changeTileColor(move.fromRow, move.fromCol, Color.PURPLE);
@@ -177,7 +166,6 @@ public class Board {
         String colorAsString = ((Color) fillColor).toString();
         boolean overTake = false;
         resetHighLight();
-        // removeHighLight();
 
         for (int rows = 0; rows < boardSize; rows++) {
             for (int cols = 0; cols < boardSize; cols++) {
@@ -190,11 +178,9 @@ public class Board {
         }
 
         if (turn == 1) {
-            // if the clicked tile is the highlighted one
-            // removeHighLight();
+
             if (colorAsString.equals(Color.LIGHTYELLOW.toString())) {
                 removeHighLight();
-                // resetHighLight();
 
                 board[clickedRow][clickedCol] = -1;
                 board[row][col] = 1;
@@ -205,11 +191,11 @@ public class Board {
                     board[clickedRow - 1][clickedCol + 1] = -1;
                 }
                 turn = 2;
-                // removeHighLight();
+
                 render();
                 if (row == 0) {
                     System.out.println("Player 1 wins");
-                    // turn = -1;
+
                 }
                 if (playerTwo == "ai") {
                     aiMove(1, 2);
@@ -219,7 +205,6 @@ public class Board {
 
             } else {
 
-                // if we want to check the possible moves for the pieces
                 Piece clickedPiece = pieces[row][col];
                 if (clickedPiece != null) {
                     Paint fill = clickedPiece.getFill();
@@ -257,24 +242,24 @@ public class Board {
                 }
             }
         } else {
-            // if the clicked tile is the highlighted one
+
             if (colorAsString.equals(Color.LIGHTYELLOW.toString())) {
                 removeHighLight();
                 board[clickedRow][clickedCol] = -1;
                 board[row][col] = 2;
                 if (col - clickedCol == -2) {
-                    // For player 2, moving up diagonally to the left
+
                     board[clickedRow + 1][clickedCol - 1] = -1;
                 }
                 if (col - clickedCol == 2) {
-                    // For player 2, moving up diagonally to the right
+
                     board[clickedRow + 1][clickedCol + 1] = -1;
                 }
                 render();
-                // turn = 1;
+
                 if (row == 8) {
                     System.out.println("Player 2 wins");
-                    // turn = -1;
+
                 }
                 if (playerOne == "ai") {
                     aiMove(2, 1);
@@ -284,7 +269,6 @@ public class Board {
 
             } else {
 
-                // if we want to check the possible moves for the pieces
                 Piece clickedPiece = pieces[row][col];
                 if (clickedPiece != null) {
                     Paint fill = clickedPiece.getFill();
@@ -358,36 +342,32 @@ public class Board {
         for (int row = 0; row < board.length; row++) {
             for (int col = 0; col < board[row].length; col++) {
                 if (board[row][col] == 1) {
-                    // Reward Player 1 for being closer to the goal (top of the board)
+
                     score += (8 - row);
 
-                    // Extra reward for Player 1 being 1 step from winning
                     if (row == 1) {
-                        score += 50; // Large bonus for being one step away from the goal
+                        score += 50;
                     }
 
-                    // Huge reward for Player 1 winning (reaching row 0)
                     if (row == 0) {
-                        score += 1000; // Winning move for Player 1
+                        score += 1000;
 
                     }
 
                 } else if (board[row][col] == 2) {
-                    // Reward Player 2 for being closer to the goal (bottom of the board)
+
                     score -= (row * 10);
 
-                    // Extra reward for Player 2 being 1 step from winning
                     if (row == 7) {
-                        score -= 50; // Large bonus for being one step away from the goal
+                        score -= 50;
                     }
 
                     if (row == 6) {
-                        score -= 50; // Encourage Player 2 to move forward
+                        score -= 50;
                     }
 
-                    // Huge reward for Player 2 winning (reaching row 8)
                     if (row == 8) {
-                        score -= 1000; // Winning move for Player 2
+                        score -= 1000;
                     }
                 }
             }
@@ -418,49 +398,40 @@ public class Board {
         List<Move> possibleMoves = generateMoves(board, color, player);
         for (Move move : possibleMoves) {
 
-            // if can take
             if (move.fromRow - move.toRow == 2 || move.fromRow - move.toRow == -2) {
                 BestMove eval = negaMax(board, depth - 1, -beta, -alpha, -color, player);
                 return new BestMove(-eval.score, move);
             }
 
-            // Make the move on the board
             makeMove(board, move, player);
 
-            // Recursively evaluate the resulting position
             BestMove eval = negaMax(board, depth - 1, -beta, -alpha, -color, player);
 
-            // Undo the move to restore the original board state
             undoMove(board, move, player);
 
-            // Negate the evaluation because we are alternating between maximizing and
-            // minimizing
             int currentEval = -eval.score;
 
-            // Update the best evaluation and move if this move is better
             if (currentEval > maxEval) {
                 maxEval = currentEval;
                 bestMove = move;
             }
 
-            // Alpha-beta pruning
             alpha = Math.max(alpha, currentEval);
             if (alpha >= beta) {
-                break; // Beta cut-off
+                break;
             }
         }
 
-        return new BestMove(maxEval, bestMove); // Return the best evaluation and move
+        return new BestMove(maxEval, bestMove);
     }
 
     public List<Move> generateMoves(int[][] board, int color, int currentPlayer) {
 
         List<Move> moves = new ArrayList<>();
 
-        // int player = (color == 1) ? 1 : 2; // Map color to board values
         for (int row = 0; row < board.length; row++) {
             for (int col = 0; col < board[row].length; col++) {
-                // issue here
+
                 if (board[row][col] == currentPlayer) {
                     moves.addAll(getValidMoves(board, row, col, currentPlayer));
                 }
@@ -557,25 +528,25 @@ public class Board {
                     - 2] == -1;
             boolean eatRight = col < 7 && row < 7 && board[row + 1][col + 1] == 1 && board[row + 2][col
                     + 2] == -1;
-            // take piece to the left
+
             if (eatLeft) {
                 validMoves.add(new Move(row, col, row + 2, col - 2));
             }
-            // take piece to the right
+
             if (eatRight) {
                 validMoves.add(new Move(row, col, row + 2, col + 2));
 
             }
             if (!eatLeft && !eatRight) {
-                // move forward
+
                 if (row < 8 && board[row + 1][col] == -1) {
                     validMoves.add(new Move(row, col, row + 1, col));
                 }
-                // move to the left
+
                 if (col > 0 && board[row][col - 1] == -1) {
                     validMoves.add(new Move(row, col, row, col - 1));
                 }
-                // move to the right
+
                 if (col < 8 && board[row][col + 1] == -1) {
                     validMoves.add(new Move(row, col, row, col + 1));
 
