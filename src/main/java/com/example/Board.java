@@ -32,8 +32,8 @@ public class Board {
         this.grid = new GridPane();
         this.pieces = new Piece[boardSize][boardSize];
         this.tiles = new Tile[boardSize][boardSize];
-        this.playerOne = "person";
-        this.playerTwo = "ai";
+        this.playerOne = "ai";
+        this.playerTwo = "person";
         initializeBoard();
         render();
     }
@@ -73,6 +73,7 @@ public class Board {
         }
         if (playerOne == "ai") {
             aiMove(2, 1);
+            render();
         }
 
     }
@@ -108,7 +109,7 @@ public class Board {
             for (int col = 0; col < boardSize; col++) {
                 Paint fillColor = tiles[row][col].getFill();
                 String colorAsString = ((Color) fillColor).toString();
-                if (colorAsString.equals(Color.LIGHTYELLOW.toString())) {
+                if (!(colorAsString.equals(Color.MAROON.toString()))) {
                     changeTileColor(row, col, Color.MAROON);
                 }
             }
@@ -132,6 +133,7 @@ public class Board {
 
     public void aiMove(int currentPlayer, int nextPlayer) {
         // call ai after player 1 move
+        // issue -1 should depend on color
         BestMove bestMove = negaMax(board, 4, Integer.MIN_VALUE, Integer.MAX_VALUE, -1, nextPlayer);
         if (bestMove.move != null) {
             makeMove(board, bestMove.move, nextPlayer);
@@ -218,14 +220,15 @@ public class Board {
                 board[clickedRow][clickedCol] = -1;
                 board[row][col] = 2;
                 if (col - clickedCol == -2) {
-                    board[clickedRow - 1][clickedCol - 1] = -1;
+                    // For player 2, moving up diagonally to the left
+                    board[clickedRow + 1][clickedCol - 1] = -1;
                 }
                 if (col - clickedCol == 2) {
-                    board[clickedRow - 1][clickedCol + 1] = -1;
+                    // For player 2, moving up diagonally to the right
+                    board[clickedRow + 1][clickedCol + 1] = -1;
                 }
-                turn = 1;
-                removeHighLight();
-                render();
+                // render();
+                // turn = 1;
                 if (row == 8) {
                     System.out.println("Player 2 wins");
                     // turn = -1;
