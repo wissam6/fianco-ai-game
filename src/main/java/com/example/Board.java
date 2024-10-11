@@ -270,7 +270,7 @@ public class Board {
                     // For player 2, moving up diagonally to the right
                     board[clickedRow + 1][clickedCol + 1] = -1;
                 }
-                // render();
+                render();
                 // turn = 1;
                 if (row == 8) {
                     System.out.println("Player 2 wins");
