@@ -49,6 +49,10 @@ public class Settings {
         scene = new Scene(mygrid.getGrid(), tileSize * boardSize, tileSize * boardSize);
         stage.setScene(scene);
         stage.show();
+        if (playerOneType == "ai") {
+            mygrid.aiMove(2, 1);
+            mygrid.render();
+        }
 
     }
 

@@ -5,7 +5,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import java.util.List;
-import java.util.ArrayList;
 
 public class Board {
     private final int boardSize;
@@ -19,6 +18,7 @@ public class Board {
     private Tile[][] tiles;
     private String playerOne;
     private String playerTwo;
+    AI ai = new AI();
 
     public Board(String playerOneType, String playerTwoType) {
         this.boardSize = 9;
@@ -69,10 +69,6 @@ public class Board {
                 }
             }
         }
-        if (playerOne == "ai") {
-            aiMove(2, 1);
-            render();
-        }
 
     }
 
@@ -115,32 +111,35 @@ public class Board {
 
     }
 
-    public void resetValidMove() {
-        for (int row = 0; row < boardSize; row++) {
-            for (int col = 0; col < boardSize; col++) {
-                Paint fillColor = tiles[row][col].getFill();
-                String colorAsString = ((Color) fillColor).toString();
-                if (colorAsString.equals(Color.PURPLE.toString())) {
-                    changeTileColor(row, col, Color.MAROON);
-                }
+    private void removeHighLight() {
+        for (int row = 0; row < board.length; row++) {
+            for (int col = 0; col < board[row].length; col++) {
+                Tile tile = tiles[row][col];
+                tile.setFill(Color.MAROON);
             }
         }
+    }
 
+    private void changeTileColor(int row, int col, Color color) {
+        if (row >= 0 && row < boardSize && col >= 0 && col < boardSize) {
+            Tile tile = tiles[row][col];
+            tile.setFill(color);
+        }
     }
 
     public void aiMove(int currentPlayer, int nextPlayer) {
 
         int color = nextPlayer == 1 ? 1 : -1;
-        BestMove bestMove = negaMax(board, 4, Integer.MIN_VALUE, Integer.MAX_VALUE, color, nextPlayer);
+        BestMove bestMove = ai.negaMax(board, 6, Integer.MIN_VALUE, Integer.MAX_VALUE, color, nextPlayer);
         if (bestMove.move != null) {
-            makeMove(board, bestMove.move, nextPlayer);
+            ai.makeMove(board, bestMove.move, nextPlayer);
             turn = currentPlayer;
             render();
 
             for (int rows = 0; rows < boardSize; rows++) {
                 for (int cols = 0; cols < boardSize; cols++) {
                     if (board[rows][cols] == currentPlayer) {
-                        List<Move> playerMoves = getValidMoves(board, rows, cols, currentPlayer);
+                        List<Move> playerMoves = ai.getValidMoves(board, rows, cols, currentPlayer);
 
                         for (Move move : playerMoves) {
                             if (move.fromRow - move.toRow == 2) {
@@ -212,7 +211,7 @@ public class Board {
                     if (color.equals(Color.WHITE)) {
                         clickedRow = row;
                         clickedCol = col;
-                        List<Move> playerOneMoves = getValidMoves(board, row, col, 1);
+                        List<Move> playerOneMoves = ai.getValidMoves(board, row, col, 1);
                         if (overTake) {
                             Paint fillColor2 = tiles[row][col].getFill();
                             String colorAsString2 = ((Color) fillColor2).toString();
@@ -276,7 +275,7 @@ public class Board {
                     if (color.equals(Color.BLACK)) {
                         clickedRow = row;
                         clickedCol = col;
-                        List<Move> playerOneMoves = getValidMoves(board, row, col, 2);
+                        List<Move> playerOneMoves = ai.getValidMoves(board, row, col, 2);
                         if (overTake) {
                             Paint fillColor2 = tiles[row][col].getFill();
                             String colorAsString2 = ((Color) fillColor2).toString();
@@ -311,22 +310,6 @@ public class Board {
 
     }
 
-    private void changeTileColor(int row, int col, Color color) {
-        if (row >= 0 && row < boardSize && col >= 0 && col < boardSize) {
-            Tile tile = tiles[row][col];
-            tile.setFill(color);
-        }
-    }
-
-    private void removeHighLight() {
-        for (int row = 0; row < board.length; row++) {
-            for (int col = 0; col < board[row].length; col++) {
-                Tile tile = tiles[row][col];
-                tile.setFill(Color.MAROON);
-            }
-        }
-    }
-
     public GridPane getGrid() {
         return grid;
     }
@@ -335,227 +318,8 @@ public class Board {
         return board;
     }
 
-    // ai
-    public int evaluateBoard(int[][] board) {
-        int score = 0;
-
-        for (int row = 0; row < board.length; row++) {
-            for (int col = 0; col < board[row].length; col++) {
-                if (board[row][col] == 1) {
-
-                    score += (8 - row);
-
-                    if (row == 1) {
-                        score += 50;
-                    }
-
-                    if (row == 0) {
-                        score += 1000;
-
-                    }
-
-                } else if (board[row][col] == 2) {
-
-                    score -= (row * 10);
-
-                    if (row == 7) {
-                        score -= 50;
-                    }
-
-                    if (row == 6) {
-                        score -= 50;
-                    }
-
-                    if (row == 8) {
-                        score -= 1000;
-                    }
-                }
-            }
-        }
-
-        return score;
+    public void setBoard(int[][] board) {
+        this.board = board;
+        render();
     }
-
-    public class BestMove {
-        int score;
-        Move move;
-
-        public BestMove(int score, Move move) {
-            this.score = score;
-            this.move = move;
-        }
-    }
-
-    public BestMove negaMax(int[][] board, int depth, int alpha, int beta, int color, int player) {
-
-        if (depth == 0) {
-            return new BestMove(color * evaluateBoard(board), null);
-        }
-
-        int maxEval = Integer.MIN_VALUE;
-        Move bestMove = null;
-
-        List<Move> possibleMoves = generateMoves(board, color, player);
-        for (Move move : possibleMoves) {
-
-            if (move.fromRow - move.toRow == 2 || move.fromRow - move.toRow == -2) {
-                BestMove eval = negaMax(board, depth - 1, -beta, -alpha, -color, player);
-                return new BestMove(-eval.score, move);
-            }
-
-            makeMove(board, move, player);
-
-            BestMove eval = negaMax(board, depth - 1, -beta, -alpha, -color, player);
-
-            undoMove(board, move, player);
-
-            int currentEval = -eval.score;
-
-            if (currentEval > maxEval) {
-                maxEval = currentEval;
-                bestMove = move;
-            }
-
-            alpha = Math.max(alpha, currentEval);
-            if (alpha >= beta) {
-                break;
-            }
-        }
-
-        return new BestMove(maxEval, bestMove);
-    }
-
-    public List<Move> generateMoves(int[][] board, int color, int currentPlayer) {
-
-        List<Move> moves = new ArrayList<>();
-
-        for (int row = 0; row < board.length; row++) {
-            for (int col = 0; col < board[row].length; col++) {
-
-                if (board[row][col] == currentPlayer) {
-                    moves.addAll(getValidMoves(board, row, col, currentPlayer));
-                }
-            }
-        }
-        return moves;
-    }
-
-    public void makeMove(int[][] board, Move move, int player) {
-        if (player == 2) {
-            board[move.toRow][move.toCol] = board[move.fromRow][move.fromCol];
-            board[move.fromRow][move.fromCol] = -1;
-            if (move.fromCol - move.toCol == 2) {
-                board[move.fromRow + 1][move.fromCol - 1] = -1;
-            }
-            if (move.fromCol - move.toCol == -2) {
-                board[move.fromRow + 1][move.fromCol + 1] = -1;
-            }
-        } else {
-            board[move.toRow][move.toCol] = board[move.fromRow][move.fromCol];
-            board[move.fromRow][move.fromCol] = -1;
-            if (move.fromCol - move.toCol == 2) {
-                board[move.fromRow - 1][move.fromCol - 1] = -1;
-            }
-            if (move.fromCol - move.toCol == -2) {
-                board[move.fromRow - 1][move.fromCol + 1] = -1;
-            }
-        }
-
-    }
-
-    public void undoMove(int[][] board, Move move, int player) {
-        if (player == 2) {
-            board[move.fromRow][move.fromCol] = board[move.toRow][move.toCol];
-            board[move.toRow][move.toCol] = -1;
-            if (move.fromCol - move.toCol == 2) {
-                board[move.fromRow + 1][move.fromCol - 1] = 1;
-            }
-            if (move.fromCol - move.toCol == -2) {
-                board[move.fromRow + 1][move.fromCol + 1] = 1;
-            }
-        } else {
-            board[move.fromRow][move.fromCol] = board[move.toRow][move.toCol];
-            board[move.toRow][move.toCol] = -1;
-            if (move.fromCol - move.toCol == 2) {
-                board[move.fromRow - 1][move.fromCol - 1] = 2;
-            }
-            if (move.fromCol - move.toCol == -2) {
-                board[move.fromRow - 1][move.fromCol + 1] = 2;
-            }
-        }
-
-    }
-
-    public static class Move {
-        int fromRow, fromCol, toRow, toCol;
-
-        public Move(int fromRow, int fromCol, int toRow, int toCol) {
-            this.fromRow = fromRow;
-            this.fromCol = fromCol;
-            this.toRow = toRow;
-            this.toCol = toCol;
-        }
-    }
-
-    public List<Move> getValidMoves(int[][] board, int row, int col, int player) {
-        List<Move> validMoves = new ArrayList<>();
-        if (player == 1) {
-            boolean eatLeft = col > 1 && row > 1 && board[row - 1][col - 1] == 2 && board[row - 2][col - 2] == -1;
-            boolean eatRight = col < 7 && row > 1 && board[row - 1][col + 1] == 2 && board[row - 2][col + 2] == -1;
-
-            if (eatLeft) {
-                validMoves.add(new Move(row, col, row - 2, col - 2));
-            }
-
-            if (eatRight) {
-                validMoves.add(new Move(row, col, row - 2, col + 2));
-            }
-
-            if (!eatLeft && !eatRight) {
-                if (row > 0 && board[row - 1][col] == -1) {
-                    validMoves.add(new Move(row, col, row - 1, col));
-                }
-                if (col > 0 && board[row][col - 1] == -1) {
-                    validMoves.add(new Move(row, col, row, col - 1));
-                }
-                if (col < 8 && board[row][col + 1] == -1) {
-                    validMoves.add(new Move(row, col, row, col + 1));
-                }
-            }
-
-        } else {
-            boolean eatLeft = col > 1 && row < 7 && board[row + 1][col - 1] == 1 && board[row + 2][col
-                    - 2] == -1;
-            boolean eatRight = col < 7 && row < 7 && board[row + 1][col + 1] == 1 && board[row + 2][col
-                    + 2] == -1;
-
-            if (eatLeft) {
-                validMoves.add(new Move(row, col, row + 2, col - 2));
-            }
-
-            if (eatRight) {
-                validMoves.add(new Move(row, col, row + 2, col + 2));
-
-            }
-            if (!eatLeft && !eatRight) {
-
-                if (row < 8 && board[row + 1][col] == -1) {
-                    validMoves.add(new Move(row, col, row + 1, col));
-                }
-
-                if (col > 0 && board[row][col - 1] == -1) {
-                    validMoves.add(new Move(row, col, row, col - 1));
-                }
-
-                if (col < 8 && board[row][col + 1] == -1) {
-                    validMoves.add(new Move(row, col, row, col + 1));
-
-                }
-            }
-
-        }
-
-        return validMoves;
-    }
-
 }
