@@ -249,6 +249,7 @@ public class Board {
                 render();
                 if (row == 0) {
                     System.out.println("Player 1 wins");
+                    settings.endGame(1);
 
                 }
                 if (playerTwo == "ai") {
@@ -315,7 +316,7 @@ public class Board {
 
                 if (row == 8) {
                     System.out.println("Player 2 wins");
-
+                    settings.endGame(2);
                 }
                 if (playerOne == "ai") {
                     aiMove(2, 1);
@@ -365,6 +366,10 @@ public class Board {
             }
         }
 
+    }
+
+    public void disableBoard() {
+        grid.setDisable(true);
     }
 
     public GridPane getGrid() {

@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.HBox;
@@ -105,6 +106,16 @@ public class Settings {
 
     public void setMove2(String move) {
         Platform.runLater(() -> moveLabel2.setText("player2: " + move));
+    }
+
+    public void endGame(int player) {
+        Board board = new Board();
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Good Game");
+        alert.setHeaderText(null);
+        alert.setContentText("Player " + player + " wins");
+        alert.showAndWait();
+        board.disableBoard();
     }
 
 }
