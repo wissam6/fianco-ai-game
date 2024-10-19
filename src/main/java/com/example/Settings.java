@@ -49,20 +49,17 @@ public class Settings {
             startGame(playerOneType, playerTwoType);
         });
 
-        // Create HBox for player one selection
         HBox playerOneBox = new HBox(10);
         playerOneBox.setAlignment(Pos.CENTER);
         playerOneBox.getChildren().addAll(playerOneLabel, playerOneComboBox);
 
-        // Create HBox for player two selection
         HBox playerTwoBox = new HBox(10);
         playerTwoBox.setAlignment(Pos.CENTER);
         playerTwoBox.getChildren().addAll(playerTwoLabel, playerTwoComboBox);
 
-        // Create the main layout
         VBox layout = new VBox(15);
         layout.setPadding(new Insets(20));
-        layout.setAlignment(Pos.CENTER); // Center the content vertically
+        layout.setAlignment(Pos.CENTER);
         layout.getChildren().addAll(playerOneBox, playerTwoBox, startButton);
 
         Scene scene = new Scene(layout, 350, 250);

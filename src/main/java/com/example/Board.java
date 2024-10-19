@@ -21,11 +21,12 @@ public class Board {
     private String playerTwo;
     private Settings settings;
     private Stack<Move> moveHistory;
-    AI ai = new AI();
+    AI ai;
 
     public Board(String playerOneType, String playerTwoType, Settings settings) {
         this.boardSize = 9;
         this.tileSize = 80;
+        this.ai = new AI(boardSize);
         this.turn = 1;
         this.clickedRow = 0;
         this.clickedCol = 0;
@@ -333,7 +334,7 @@ public class Board {
                     if (color.equals(Color.BLACK)) {
                         clickedRow = row;
                         clickedCol = col;
-                        List<Move> playerOneMoves = ai.getValidMoves(board, row, col, 2);
+                        List<Move> playerTwoMoves = ai.getValidMoves(board, row, col, 2);
                         if (overTake) {
                             Paint fillColor2 = tiles[row][col].getFill();
                             String colorAsString2 = ((Color) fillColor2).toString();
@@ -356,7 +357,7 @@ public class Board {
                             }
 
                         } else {
-                            for (Move move : playerOneMoves) {
+                            for (Move move : playerTwoMoves) {
                                 changeTileColor(move.toRow, move.toCol, Color.LIGHTYELLOW);
                             }
                         }

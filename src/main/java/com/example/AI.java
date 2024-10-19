@@ -5,76 +5,117 @@ import java.util.ArrayList;
 
 public class AI {
 
-    public BestMove negaMax(int[][] board, int depth, int alpha, int beta, int color, int player) {
+    private ZobristHasher hasher;
+    private TranspositionTable transTable;
+    private int boardSize;
 
-        if (depth == 0) {
-            return new BestMove(color * evaluateBoard(board), null);
+    public AI(int boardSize) {
+        this.boardSize = boardSize;
+        hasher = new ZobristHasher(boardSize);
+        transTable = new TranspositionTable();
+    }
+
+    public BestMove negaMax(int[][] board, int depth, int alpha, int beta, int color, int player) {
+        long hash = hasher.computeHash(board);
+        TableEntry entry = transTable.lookup(hash);
+
+        if (entry != null && entry.depth >= depth) {
+            if (entry.flag == 0) {
+                return new BestMove(entry.evaluation, entry.bestMove);
+            } else if (entry.flag == -1 && entry.evaluation <= alpha) {
+                return new BestMove(alpha, entry.bestMove);
+            } else if (entry.flag == 1 && entry.evaluation >= beta) {
+                return new BestMove(beta, entry.bestMove);
+            }
         }
 
+        if (depth == 0) {
+            return new BestMove(color * evaluateBoard(board, player), null);
+        }
+
+        int alphaOrig = alpha;
         int maxEval = Integer.MIN_VALUE;
         Move bestMove = null;
 
         List<Move> possibleMoves = generateMoves(board, color, player);
         for (Move move : possibleMoves) {
 
-            if (move.fromRow - move.toRow == 2 || move.fromRow - move.toRow == -2) {
-                BestMove eval = negaMax(board, depth - 1, -beta, -alpha, -color, player);
-                return new BestMove(-eval.score, move);
-            }
-
-            makeMove(board, move, player);
-
-            BestMove eval = negaMax(board, depth - 1, -beta, -alpha, -color, player);
-
-            undoMove(board, move, player);
-
-            int currentEval = -eval.score;
-
-            if (currentEval > maxEval) {
-                maxEval = currentEval;
-                bestMove = move;
-            }
-
-            alpha = Math.max(alpha, currentEval);
-            if (alpha >= beta) {
+            if (Math.abs(move.fromRow - move.toRow) == 2) {
+                makeMove(board, move, player);
+                BestMove eval = negaMax(board, depth - 1, -beta, -alpha, color, player);
+                undoMove(board, move, player);
+                int currentEval = -eval.score;
+                if (currentEval > maxEval) {
+                    maxEval = currentEval;
+                    bestMove = move;
+                }
                 break;
+            } else {
+                makeMove(board, move, player);
+                BestMove eval = negaMax(board, depth - 1, -beta, -alpha, -color, player);
+                undoMove(board, move, player);
+
+                int currentEval = -eval.score;
+
+                if (currentEval > maxEval) {
+                    maxEval = currentEval;
+                    bestMove = move;
+                }
+
+                alpha = Math.max(alpha, currentEval);
+                if (alpha >= beta) {
+                    break;
+                }
             }
         }
+
+        int flag;
+        if (maxEval <= alphaOrig) {
+            flag = 1;
+        } else if (maxEval >= beta) {
+            flag = -1;
+        } else {
+            flag = 0;
+        }
+
+        transTable.store(hash, new TableEntry(maxEval, depth, flag, bestMove));
 
         return new BestMove(maxEval, bestMove);
     }
 
-    public int evaluateBoard(int[][] board) {
+    public int evaluateBoard(int[][] board, int player) {
         int score = 0;
+        int boardSize = board.length;
+        int aiPlayer = player;
+        int opponentPlayer = (player == 1) ? 2 : 1;
 
-        for (int row = 0; row < board.length; row++) {
+        for (int row = 0; row < boardSize; row++) {
             for (int col = 0; col < board[row].length; col++) {
-                if (board[row][col] == 1) {
+                int piece = board[row][col];
 
-                    score += (8 - row);
+                if (piece == aiPlayer) {
 
-                    if (row == 1) {
+                    int advancement = (aiPlayer == 1) ? (boardSize - 1 - row) : row;
+                    score += advancement * 10;
+
+                    if ((aiPlayer == 1 && row == 1) || (aiPlayer == 2 && row == boardSize - 2)) {
                         score += 50;
                     }
 
-                    if (row == 0) {
+                    if ((aiPlayer == 1 && row == 0) || (aiPlayer == 2 && row == boardSize - 1)) {
                         score += 1000;
-
                     }
 
-                } else if (board[row][col] == 2) {
+                } else if (piece == opponentPlayer) {
 
-                    score -= (row * 10);
+                    int opponentAdvancement = (aiPlayer == 1) ? row : (boardSize - 1 - row);
+                    score -= opponentAdvancement * 10;
 
-                    if (row == 7) {
+                    if ((aiPlayer == 1 && row == boardSize - 2) || (aiPlayer == 2 && row == 1)) {
                         score -= 50;
                     }
 
-                    if (row == 6) {
-                        score -= 50;
-                    }
-
-                    if (row == 8) {
+                    if ((aiPlayer == 1 && row == boardSize - 1) || (aiPlayer == 2 && row == 0)) {
                         score -= 1000;
                     }
                 }
@@ -86,17 +127,30 @@ public class AI {
 
     public List<Move> generateMoves(int[][] board, int color, int currentPlayer) {
 
-        List<Move> moves = new ArrayList<>();
+        List<Move> captureMoves = new ArrayList<>();
+        List<Move> normalMoves = new ArrayList<>();
 
         for (int row = 0; row < board.length; row++) {
             for (int col = 0; col < board[row].length; col++) {
 
                 if (board[row][col] == currentPlayer) {
-                    moves.addAll(getValidMoves(board, row, col, currentPlayer));
+                    List<Move> validMoves = getValidMoves(board, row, col, currentPlayer);
+                    for (Move move : validMoves) {
+                        if (Math.abs(move.fromRow - move.toRow) == 2) {
+                            captureMoves.add(move);
+                        } else {
+                            normalMoves.add(move);
+                        }
+                    }
                 }
             }
         }
-        return moves;
+
+        if (!captureMoves.isEmpty()) {
+            return captureMoves;
+        } else {
+            return normalMoves;
+        }
     }
 
     public void makeMove(int[][] board, Move move, int player) {
