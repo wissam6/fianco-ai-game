@@ -83,46 +83,131 @@ public class AI {
         return new BestMove(maxEval, bestMove);
     }
 
-    public int evaluateBoard(int[][] board, int player) {
+    public int evaluateBoard(int[][] board, int aiPlayer) {
         int score = 0;
         int boardSize = board.length;
-        int aiPlayer = player;
-        int opponentPlayer = (player == 1) ? 2 : 1;
+        int opponentPlayer = (aiPlayer == 1) ? 2 : 1;
+
+        int aiStones = 0;
+        int opponentStones = 0;
+
+        int aiMobility = 0;
+        int opponentMobility = 0;
 
         for (int row = 0; row < boardSize; row++) {
-            for (int col = 0; col < board[row].length; col++) {
+            for (int col = 0; col < boardSize; col++) {
                 int piece = board[row][col];
 
                 if (piece == aiPlayer) {
-
-                    int advancement = (aiPlayer == 1) ? (boardSize - 1 - row) : row;
-                    score += advancement * 10;
-
-                    if ((aiPlayer == 1 && row == 1) || (aiPlayer == 2 && row == boardSize - 2)) {
-                        score += 50;
-                    }
-
-                    if ((aiPlayer == 1 && row == 0) || (aiPlayer == 2 && row == boardSize - 1)) {
-                        score += 1000;
-                    }
-
+                    aiStones++;
+                    score += evaluatePiece(board, row, col, aiPlayer);
+                    aiMobility += getValidMoves(board, row, col, aiPlayer).size();
                 } else if (piece == opponentPlayer) {
-
-                    int opponentAdvancement = (aiPlayer == 1) ? row : (boardSize - 1 - row);
-                    score -= opponentAdvancement * 10;
-
-                    if ((aiPlayer == 1 && row == boardSize - 2) || (aiPlayer == 2 && row == 1)) {
-                        score -= 50;
-                    }
-
-                    if ((aiPlayer == 1 && row == boardSize - 1) || (aiPlayer == 2 && row == 0)) {
-                        score -= 1000;
-                    }
+                    opponentStones++;
+                    score -= evaluatePiece(board, row, col, opponentPlayer);
+                    opponentMobility += getValidMoves(board, row, col, opponentPlayer).size();
                 }
             }
         }
 
+        score += (aiStones - opponentStones) * 100;
+
+        score += (aiMobility - opponentMobility) * 5;
+
         return score;
+    }
+
+    private int evaluatePiece(int[][] board, int row, int col, int player) {
+        int pieceScore = 0;
+        int boardSize = board.length;
+        int opponentPlayer = (player == 1) ? 2 : 1;
+
+        int advancement = (player == 1) ? (boardSize - 1 - row) : row;
+        pieceScore += advancement * 10;
+
+        if (col == 0 || col == boardSize - 1) {
+            pieceScore += 20;
+        }
+
+        if (canCapture(board, row, col, player)) {
+            pieceScore += 50;
+        }
+        if (isUnderThreat(board, row, col, player)) {
+            pieceScore -= 50;
+        }
+
+        if ((player == 1 && row == 0) || (player == 2 && row == boardSize - 1)) {
+            pieceScore += 1000;
+        }
+
+        if ((player == 1 && row == boardSize - 1) || (player == 2 && row == 0)) {
+            pieceScore -= 1000;
+        }
+
+        return pieceScore;
+    }
+
+    private boolean canCapture(int[][] board, int row, int col, int player) {
+        int boardSize = board.length;
+        int opponent = (player == 1) ? 2 : 1;
+
+        if (player == 1) {
+
+            if (row > 1 && col > 1 && board[row - 1][col - 1] == opponent && board[row - 2][col - 2] == -1) {
+                return true;
+            }
+
+            if (row > 1 && col < boardSize - 2 && board[row - 1][col + 1] == opponent
+                    && board[row - 2][col + 2] == -1) {
+                return true;
+            }
+        } else {
+
+            if (row < boardSize - 2 && col > 1 && board[row + 1][col - 1] == opponent
+                    && board[row + 2][col - 2] == -1) {
+                return true;
+            }
+
+            if (row < boardSize - 2 && col < boardSize - 2 && board[row + 1][col + 1] == opponent
+                    && board[row + 2][col + 2] == -1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isUnderThreat(int[][] board, int row, int col, int player) {
+        int boardSize = board.length;
+        int opponent = (player == 1) ? 2 : 1;
+
+        if (player == 1) {
+            // Opponent can capture this piece moving downwards
+            if (row < boardSize - 2) {
+                // Opponent's forward-left capture
+                if (col > 1 && board[row + 1][col - 1] == opponent && board[row + 2][col - 2] == -1) {
+                    return true;
+                }
+                // Opponent's forward-right capture
+                if (col < boardSize - 2 && board[row + 1][col + 1] == opponent && board[row + 2][col + 2] == -1) {
+                    return true;
+                }
+            }
+        } else {
+            // Opponent can capture this piece moving upwards
+            if (row > 1) {
+                // Opponent's forward-left capture
+                if (col > 1 && board[row - 1][col - 1] == opponent && board[row - 2][col - 2] == -1) {
+                    return true;
+                }
+                // Opponent's forward-right capture
+                if (col < boardSize - 2 && board[row - 1][col + 1] == opponent && board[row - 2][col + 2] == -1) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public List<Move> generateMoves(int[][] board, int color, int currentPlayer) {
