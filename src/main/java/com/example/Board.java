@@ -159,10 +159,11 @@ public class Board {
     public void aiMove(int currentPlayer, int nextPlayer) {
 
         int color = nextPlayer == 1 ? 1 : -1;
-        BestMove bestMove = ai.negaMax(board, 6, Integer.MIN_VALUE, Integer.MAX_VALUE, color, nextPlayer);
+        BestMove bestMove = ai.negaMax(board, 7, Integer.MIN_VALUE, Integer.MAX_VALUE, color, nextPlayer);
         if (bestMove.move != null) {
             ai.makeMove(board, bestMove.move, nextPlayer);
             moveHistory.push(bestMove.move);
+
             if (nextPlayer == 1) {
                 settings.setMove(moveDisplay(bestMove.move.fromRow, bestMove.move.fromCol) + "-"
                         + moveDisplay(bestMove.move.toRow, bestMove.move.toCol));
@@ -199,6 +200,7 @@ public class Board {
     }
 
     public void undoLastMove() {
+
         if (!moveHistory.isEmpty()) {
             Move lastMove = moveHistory.pop();
             int player = board[lastMove.toRow][lastMove.toCol];
@@ -206,7 +208,7 @@ public class Board {
             render();
 
         } else {
-            System.out.println("No moves to undo.");
+            System.out.println("move history empty");
         }
     }
 
@@ -233,6 +235,8 @@ public class Board {
 
                 board[clickedRow][clickedCol] = -1;
                 board[row][col] = 1;
+                Move moveOne = new Move(clickedRow, clickedCol, row, col);
+                moveHistory.add(moveOne);
                 settings.setMove(moveDisplay(clickedRow, clickedCol) + "-"
                         + moveDisplay(row, col));
                 if (col - clickedCol == -2) {
@@ -241,7 +245,6 @@ public class Board {
                 if (col - clickedCol == 2) {
                     board[clickedRow - 1][clickedCol + 1] = -1;
                 }
-                // turn = 2;
 
                 render();
                 if (row == 0) {
@@ -298,6 +301,8 @@ public class Board {
                 removeHighLight();
                 board[clickedRow][clickedCol] = -1;
                 board[row][col] = 2;
+                Move moveTwo = new Move(clickedRow, clickedCol, row, col);
+                moveHistory.add(moveTwo);
                 if (col - clickedCol == -2) {
 
                     board[clickedRow + 1][clickedCol - 1] = -1;

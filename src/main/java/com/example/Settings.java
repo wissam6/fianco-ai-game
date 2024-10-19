@@ -2,6 +2,7 @@ package com.example;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -17,8 +18,6 @@ public class Settings {
     private final int tileSize = 82;
     private Label moveLabel = new Label("player1: a-0");
     private Label moveLabel2 = new Label("player2: a-0");
-    Board board = new Board();
-    // private AI ai = new AI();
 
     public Scene getScene() {
         stage.setTitle("Player Selection");
@@ -26,15 +25,21 @@ public class Settings {
         Label playerOneLabel = new Label("Player One:");
         Label playerTwoLabel = new Label("Player Two:");
 
+        playerOneLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+        playerTwoLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+
         ComboBox<String> playerOneComboBox = new ComboBox<>();
         playerOneComboBox.getItems().addAll("ai", "person");
         playerOneComboBox.setValue("person");
+        playerOneComboBox.setPrefWidth(100);
 
         ComboBox<String> playerTwoComboBox = new ComboBox<>();
         playerTwoComboBox.getItems().addAll("ai", "person");
         playerTwoComboBox.setValue("ai");
+        playerTwoComboBox.setPrefWidth(100);
 
         Button startButton = new Button("Start Game");
+        startButton.setPrefWidth(120);
         startButton.setOnAction(e -> {
             String playerOneType = playerOneComboBox.getValue();
             String playerTwoType = playerTwoComboBox.getValue();
@@ -43,10 +48,23 @@ public class Settings {
             startGame(playerOneType, playerTwoType);
         });
 
-        VBox layout = new VBox(10);
-        layout.getChildren().addAll(playerOneLabel, playerOneComboBox, playerTwoLabel, playerTwoComboBox, startButton);
+        // Create HBox for player one selection
+        HBox playerOneBox = new HBox(10);
+        playerOneBox.setAlignment(Pos.CENTER);
+        playerOneBox.getChildren().addAll(playerOneLabel, playerOneComboBox);
 
-        Scene scene = new Scene(layout, 300, 200);
+        // Create HBox for player two selection
+        HBox playerTwoBox = new HBox(10);
+        playerTwoBox.setAlignment(Pos.CENTER);
+        playerTwoBox.getChildren().addAll(playerTwoLabel, playerTwoComboBox);
+
+        // Create the main layout
+        VBox layout = new VBox(15);
+        layout.setPadding(new Insets(20));
+        layout.setAlignment(Pos.CENTER); // Center the content vertically
+        layout.getChildren().addAll(playerOneBox, playerTwoBox, startButton);
+
+        Scene scene = new Scene(layout, 350, 250);
         return scene;
     }
 
@@ -61,7 +79,7 @@ public class Settings {
         Button undo = new Button("undo");
 
         undo.setOnAction(event -> {
-            board.undoLastMove();
+            mygrid.undoLastMove();
         });
 
         labelSection.getChildren().addAll(moveLabel, moveLabel2, undo);
