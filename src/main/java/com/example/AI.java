@@ -5,6 +5,8 @@ import java.util.ArrayList;
 
 public class AI {
 
+    // Move lastMove = new Move(0, 0, 0, 0);
+
     public BestMove negaMax(int[][] board, int depth, int alpha, int beta, int color, int player) {
 
         if (depth == 0) {
@@ -23,6 +25,7 @@ public class AI {
             }
 
             makeMove(board, move, player);
+            // lastMove = new Move(move.fromRow, move.fromCol, move.toRow, move.toCol);
 
             BestMove eval = negaMax(board, depth - 1, -beta, -alpha, -color, player);
 
@@ -43,6 +46,10 @@ public class AI {
 
         return new BestMove(maxEval, bestMove);
     }
+
+    // public Move getLastMove() {
+    // return lastMove;
+    // }
 
     public int evaluateBoard(int[][] board) {
         int score = 0;

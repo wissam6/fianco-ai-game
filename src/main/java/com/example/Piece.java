@@ -3,7 +3,6 @@ package com.example;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
 
 public class Piece {
     private Circle piece;

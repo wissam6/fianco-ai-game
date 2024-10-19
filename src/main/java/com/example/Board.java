@@ -5,6 +5,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import java.util.List;
+import java.util.Stack;
 
 public class Board {
     private final int boardSize;
@@ -18,9 +19,11 @@ public class Board {
     private Tile[][] tiles;
     private String playerOne;
     private String playerTwo;
+    private Settings settings;
+    private Stack<Move> moveHistory;
     AI ai = new AI();
 
-    public Board(String playerOneType, String playerTwoType) {
+    public Board(String playerOneType, String playerTwoType, Settings settings) {
         this.boardSize = 9;
         this.tileSize = 80;
         this.turn = 1;
@@ -32,6 +35,23 @@ public class Board {
         this.tiles = new Tile[boardSize][boardSize];
         this.playerOne = playerOneType;
         this.playerTwo = playerTwoType;
+        this.settings = settings;
+        this.moveHistory = new Stack<>();
+        initializeBoard();
+        render();
+    }
+
+    public Board() {
+        this.boardSize = 9;
+        this.tileSize = 80;
+        this.turn = 1;
+        this.clickedRow = 0;
+        this.clickedCol = 0;
+        this.board = new int[boardSize][boardSize];
+        this.grid = new GridPane();
+        this.pieces = new Piece[boardSize][boardSize];
+        this.tiles = new Tile[boardSize][boardSize];
+        this.moveHistory = new Stack<>();
         initializeBoard();
         render();
     }
@@ -98,6 +118,15 @@ public class Board {
 
     }
 
+    public String moveDisplay(int row, int col) {
+
+        char letter = (char) ('a' + col);
+
+        int number = 9 - row;
+
+        return String.valueOf(letter) + number;
+    }
+
     public void resetHighLight() {
         for (int row = 0; row < boardSize; row++) {
             for (int col = 0; col < boardSize; col++) {
@@ -133,6 +162,15 @@ public class Board {
         BestMove bestMove = ai.negaMax(board, 6, Integer.MIN_VALUE, Integer.MAX_VALUE, color, nextPlayer);
         if (bestMove.move != null) {
             ai.makeMove(board, bestMove.move, nextPlayer);
+            moveHistory.push(bestMove.move);
+            if (nextPlayer == 1) {
+                settings.setMove(moveDisplay(bestMove.move.fromRow, bestMove.move.fromCol) + "-"
+                        + moveDisplay(bestMove.move.toRow, bestMove.move.toCol));
+            } else {
+                settings.setMove2(moveDisplay(bestMove.move.fromRow, bestMove.move.fromCol) + "-"
+                        + moveDisplay(bestMove.move.toRow, bestMove.move.toCol));
+            }
+
             turn = currentPlayer;
             render();
 
@@ -160,6 +198,18 @@ public class Board {
         }
     }
 
+    public void undoLastMove() {
+        if (!moveHistory.isEmpty()) {
+            Move lastMove = moveHistory.pop();
+            int player = board[lastMove.toRow][lastMove.toCol];
+            ai.undoMove(board, lastMove, player);
+            render();
+
+        } else {
+            System.out.println("No moves to undo.");
+        }
+    }
+
     public void handleTileClick(int row, int col) {
         Paint fillColor = tiles[row][col].getFill();
         String colorAsString = ((Color) fillColor).toString();
@@ -183,13 +233,15 @@ public class Board {
 
                 board[clickedRow][clickedCol] = -1;
                 board[row][col] = 1;
+                settings.setMove(moveDisplay(clickedRow, clickedCol) + "-"
+                        + moveDisplay(row, col));
                 if (col - clickedCol == -2) {
                     board[clickedRow - 1][clickedCol - 1] = -1;
                 }
                 if (col - clickedCol == 2) {
                     board[clickedRow - 1][clickedCol + 1] = -1;
                 }
-                turn = 2;
+                // turn = 2;
 
                 render();
                 if (row == 0) {
