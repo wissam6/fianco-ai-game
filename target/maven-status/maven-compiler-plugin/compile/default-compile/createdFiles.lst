@@ -1,0 +1,12 @@
+com\example\Tile.class
+com\example\Move.class
+com\example\Settings.class
+com\example\AI.class
+com\example\BestMove.class
+com\example\Piece.class
+com\example\TranspositionTable.class
+com\example\TableEntry.class
+module-info.class
+com\example\App.class
+com\example\Board.class
+com\example\ZobristHasher.class
